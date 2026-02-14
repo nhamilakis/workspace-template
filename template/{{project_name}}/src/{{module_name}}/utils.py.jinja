@@ -1,0 +1,66 @@
+"""Utility functions for {{ project_name }}."""
+
+from pathlib import Path
+
+from rich.console import Console
+
+console = Console()
+
+
+def hello() -> str:
+    """Return a greeting message.
+    
+    Returns a simple greeting message from the module.
+    
+    Raises:
+        None
+    """
+    return f"Hello from {{ module_name }}!"
+
+
+def get_project_root() -> Path:
+    """Get the project root directory.
+    
+    Returns the absolute path to the project root directory,
+    which is useful for constructing paths to data files and configs.
+    
+    Raises:
+        None
+    """
+    return Path(__file__).parent.parent.parent
+
+
+def print_success(message: str) -> None:
+    """Print a success message with rich formatting.
+    
+    Args:
+        message: The success message to display
+    
+    Raises:
+        None
+    """
+    console.print(f"[green]✓[/green] {message}")
+
+
+def print_error(message: str) -> None:
+    """Print an error message with rich formatting.
+    
+    Args:
+        message: The error message to display
+    
+    Raises:
+        None
+    """
+    console.print(f"[red]✗[/red] {message}")
+
+
+def print_info(message: str) -> None:
+    """Print an info message with rich formatting.
+    
+    Args:
+        message: The info message to display
+    
+    Raises:
+        None
+    """
+    console.print(f"[blue]ℹ[/blue] {message}")

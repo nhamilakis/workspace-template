@@ -1,0 +1,149 @@
+"""Configuration settings for {{ project_name }}."""
+
+from pathlib import Path
+from typing import Any
+
+try:
+    import tomllib  # Python 3.11+
+except ModuleNotFoundError:
+    import tomli as tomllib  # Fallback for older versions
+
+from pydantic import BaseModel, Field
+from pydantic_settings import BaseSettings
+
+
+class Workspace(BaseModel):
+    """Workspace paths configuration.
+    
+    Defines project-specific directory paths for data, outputs,
+    models, and other project artifacts.
+    """
+
+    data_dir: Path = Field(default_factory=lambda: Path("data"))
+    output_dir: Path = Field(default_factory=lambda: Path("outputs"))
+    models_dir: Path = Field(default_factory=lambda: Path("models"))
+    cache_dir: Path = Field(default_factory=lambda: Path(".cache"))
+
+    def ensure_directories(self) -> None:
+        """Create workspace directories if they don't exist.
+        
+        Creates all configured workspace directories with parent
+        directories as needed.
+        
+        Raises:
+            OSError: If directory creation fails due to permissions
+        """
+        for directory in [self.data_dir, self.output_dir, self.models_dir, self.cache_dir]:
+            directory.mkdir(parents=True, exist_ok=True)
+
+
+class Settings(BaseSettings):
+    """Project settings and configuration.
+    
+    Centralized configuration management for the project.
+    Loads settings from TOML files with priority:
+    1. /etc/{{ project_slug }}/config.toml (lowest priority)
+    2. $HOME/.{{ project_slug }}/config.toml
+    3. <project_root>/{{ project_slug }}.toml (highest priority)
+    
+    Later configs override earlier ones.
+    """
+
+    workspace: Workspace = Field(default_factory=Workspace)
+    project_name: str = Field(default="{{ project_name }}")
+    debug: bool = Field(default=False)
+
+    @classmethod
+    def _get_config_paths(cls) -> list[Path]:
+        """Get list of potential config file paths in priority order.
+        
+        Returns paths from lowest to highest priority so later
+        configs can override earlier ones.
+        
+        Raises:
+            None
+        """
+        project_root = cls._get_project_root()
+        home = Path.home()
+        
+        return [
+            Path("/etc/{{ project_slug }}/config.toml"),
+            home / ".{{ project_slug }}" / "config.toml",
+            project_root / "{{ project_slug }}.toml",
+        ]
+
+    @staticmethod
+    def _get_project_root() -> Path:
+        """Get the project root directory.
+        
+        Returns the absolute path to the project root by finding
+        the directory containing this settings file and going up
+        three levels (src/module/settings.py -> root).
+        
+        Raises:
+            None
+        """
+        return Path(__file__).parent.parent.parent
+
+    @classmethod
+    def load_from_toml(cls) -> "Settings":
+        """Load settings from TOML configuration files.
+        
+        Searches for config files in multiple locations and merges them
+        with priority: /etc < $HOME < project_root.
+        
+        Raises:
+            ValueError: If TOML file exists but is malformed
+        """
+        merged_config: dict[str, Any] = {}
+        
+        for config_path in cls._get_config_paths():
+            if config_path.exists():
+                try:
+                    with open(config_path, "rb") as f:
+                        config_data = tomllib.load(f)
+                        # Deep merge configs (later overrides earlier)
+                        merged_config = cls._deep_merge(merged_config, config_data)
+                except Exception as e:
+                    raise ValueError(f"Failed to load config from {config_path}: {e}") from e
+        
+        return cls(**merged_config) if merged_config else cls()
+
+    @staticmethod
+    def _deep_merge(base: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:
+        """Deep merge two dictionaries.
+        
+        Recursively merges override into base, with override values
+        taking precedence. Handles nested dictionaries properly.
+        
+        Raises:
+            None
+        """
+        result = base.copy()
+        
+        for key, value in override.items():
+            if key in result and isinstance(result[key], dict) and isinstance(value, dict):
+                result[key] = Settings._deep_merge(result[key], value)
+            else:
+                result[key] = value
+        
+        return result
+
+    def to_dict(self) -> dict[str, Any]:
+        """Convert settings to dictionary.
+        
+        Returns a dictionary representation of all settings,
+        useful for serialization or logging.
+        
+        Raises:
+            None
+        """
+        return self.model_dump()
+
+    def __repr__(self) -> str:
+        """Return string representation of settings.
+        
+        Raises:
+            None
+        """
+        return f"Settings(project_name={self.project_name}, debug={self.debug})"

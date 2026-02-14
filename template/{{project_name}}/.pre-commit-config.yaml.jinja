@@ -1,0 +1,81 @@
+# Pre-commit hooks configuration for {{ project_name }}
+# See https://pre-commit.com for more information
+
+repos:
+  # Ruff - Fast Python linter and formatter
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.4
+    hooks:
+      # Run the linter
+      - id: ruff
+        args: [--fix]
+        types_or: [python, pyi]
+      # Run the formatter
+      - id: ruff-format
+        types_or: [python, pyi]
+
+  # Mypy - Static type checker
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.13.0
+    hooks:
+      - id: mypy
+        additional_dependencies:
+          - pydantic>=2.0
+          - pydantic-settings
+          - types-toml
+        args: [--strict, --ignore-missing-imports]
+        exclude: ^tests/
+
+  # General file checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      # Remove trailing whitespace
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+      # Ensure files end with newline
+      - id: end-of-file-fixer
+      # Check YAML files
+      - id: check-yaml
+        args: [--unsafe]  # Allow custom YAML tags
+      # Check TOML files
+      - id: check-toml
+      # Check for merge conflicts
+      - id: check-merge-conflict
+      # Check for large files
+      - id: check-added-large-files
+        args: [--maxkb=1000]
+      # Check case conflicts
+      - id: check-case-conflict
+      # Fix mixed line endings
+      - id: mixed-line-ending
+        args: [--fix=lf]
+      # Check JSON files
+      - id: check-json
+      # Prevent committing to main
+      - id: no-commit-to-branch
+        args: [--branch, main, --branch, master]
+
+  # Additional Python checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      # Check for debugger imports
+      - id: debug-statements
+      # Check docstring is first
+      - id: check-docstring-first
+      # Detect private key
+      - id: detect-private-key
+
+# Configuration
+ci:
+  autofix_commit_msg: |
+    [pre-commit.ci] auto fixes from pre-commit hooks
+
+    for more information, see https://pre-commit.ci
+  autofix_prs: true
+  autoupdate_branch: ''
+  autoupdate_commit_msg: '[pre-commit.ci] pre-commit autoupdate'
+  autoupdate_schedule: weekly
+  skip: []
+  submodules: false

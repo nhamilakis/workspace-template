@@ -1,0 +1,10 @@
+"""{{ project_description }}"""
+
+__version__ = "0.1.0"
+
+from {{ module_name }}.settings import Settings
+
+# Load configuration at module import
+CONF = Settings.load_from_toml()
+
+__all__ = ["CONF", "__version__"]

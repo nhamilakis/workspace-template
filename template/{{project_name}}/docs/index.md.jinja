@@ -1,0 +1,57 @@
+# {{ project_name }}
+
+{{ project_description }}
+
+## Overview
+
+{{ project_name }} is a Python {{ python_version }}+ project built with modern tooling and best practices for data science workflows.
+
+## Key Features
+
+- **Modern Python Stack**: Built with Python {{ python_version }}+ and type hints throughout
+- **Fast Package Management**: Uses `uv` for lightning-fast dependency resolution
+- **Code Quality**: Automated formatting with `ruff` and type checking with `mypy`
+- **Testing**: Comprehensive testing setup with `pytest`
+- **Configuration**: Flexible TOML-based configuration with Pydantic validation
+- **Task Automation**: Simple task running with `just`
+- **Documentation**: Beautiful docs with MkDocs Material theme
+{% if use_remote_sync %}
+- **Remote Development**: Easy deployment to {{ remote_cluster_name }}
+- **HPC Ready**: SLURM scripts for cluster computing
+{% endif %}
+
+
+## Quick Start
+```bash
+# Clone the repository
+git clone <your-repo-url>
+cd {{ project_name }}
+
+# Set up development environment
+just setup
+
+# Run tests
+just test
+```
+
+## Project Structure
+```
+{{ project_name }}/
+├── src/{{ module_name }}/     # Main package
+├── tests/                      # Test suite
+├── scripts/                    # SLURM scripts
+├── docs/                       # Documentation
+├── notebooks/                  # Jupyter notebooks
+└── pyproject.toml             # Configuration
+```
+
+## Next Steps
+
+- [Installation Guide](getting-started/installation.md) - Detailed setup instructions
+- [Configuration](getting-started/configuration.md) - Configure your project
+- [Usage Guide](user-guide/usage.md) - Learn how to use {{ module_name }}
+- [API Reference](api/settings.md) - Explore the API
+
+## Authors
+
+**{{ author_name }}** - [{{ author_email }}](mailto:{{ author_email }})

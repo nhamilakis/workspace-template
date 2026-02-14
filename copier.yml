@@ -1,25 +1,104 @@
-# questions
+# copier.yml
+
+_subdirectory: template
+
+_templates_suffix: .jinja
+
+_answers_file: .copier-answers.yml
+
+_min_copier_version: "9.0.0"
+
+# Questions for the user
 project_name:
-    type: str
-    help: What is your project name?
+  type: str
+  help: What is your project name? (will be used for directory name)
+  placeholder: my-awesome-project
+  validator: >-
+    {% if not project_name %} Project name is required {% endif %}
+
+project_slug:
+  type: str
+  help: Project slug (for Python package name, use underscores)
+  default: "{{ project_name | lower | replace('-', '_') | replace(' ', '_') }}"
 
 module_name:
-    type: str
-    help: What is your Main Python module name?
+  type: str
+  help: Main module name (the package under src/)
+  default: "{{ project_slug }}"
 
-description:
-    type: str
-    help: Do a brief description.
+project_description:
+  type: str
+  help: A short description of your project
+  default: A Python data science project
 
-creator:
-    type: str
-    help: What is your full-name?
+author_name:
+  type: str
+  help: Your name
+  default: Your Name
 
-email:
-    type: str
-    help: What is your email ?
+author_email:
+  type: str
+  help: Your email
+  default: your.email@example.com
 
-python:
-    type: str
-    help: "What is the minimum python version supported (default: 3.10)?"
+python_version:
+  type: str
+  help: Python version to use
+  default: "3.13"
+  choices:
+  - "3.13"
+  - "3.12"
+  - "3.11"
 
+use_precommit:
+  type: bool
+  help: Use pre-commit hooks?
+  default: true
+
+# Remote cluster configuration
+use_remote_sync:
+  type: bool
+  help: Do you work with a remote cluster for development?
+  default: false
+
+remote_cluster_name:
+  type: str
+  help: Remote cluster hostname (e.g., oberon2, cluster.university.edu)
+  default: cluster
+  when: "{{ use_remote_sync }}"
+
+remote_workspace_path:
+  type: str
+  help: Workspace path on remote cluster
+  default: workspace/runtime
+  when: "{{ use_remote_sync }}"
+
+slurm_partition:
+  type: str
+  help: Default SLURM partition name
+  default: cpu
+
+slurm_default_cpus:
+  type: int
+  help: Default number of CPUs for SLURM jobs
+  default: 1
+
+slurm_default_mem:
+  type: str
+  help: Default memory for SLURM jobs (e.g., 16G, 32G)
+  default: 16G
+
+slurm_default_time:
+  type: str
+  help: Default time limit for SLURM jobs (e.g., 1:00:00)
+  default: "4:00:00"
+
+# Post-generation tasks
+_tasks:
+- command: [ git, init ]
+  when: "{{ _copier_operation == 'copy' }}"
+  working_directory: "{{ project_name }}"
+- command: [ git, add, --all ]
+  working_directory: "{{ project_name }}"
+- command: [ git, commit, -m, "Commit template" ]
+  working_directory: "{{ project_name }}"

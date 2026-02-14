@@ -1,0 +1,58 @@
+"""Example tests for {{ project_name }}."""
+
+from pathlib import Path
+
+import pytest
+
+from {{ module_name }} import CONF, __version__
+from {{ module_name }}.settings import Settings, Workspace
+
+
+def test_version() -> None:
+    """Test that version is defined.
+    
+    Raises:
+        AssertionError: If version is not a string or is empty
+    """
+    assert isinstance(__version__, str)
+    assert len(__version__) > 0
+    assert __version__ == "0.1.0"
+    
+
+def test_conf_loaded() -> None:
+    """Test that CONF is automatically loaded.
+    
+    Raises:
+        AssertionError: If CONF is not a Settings instance
+    """
+    assert isinstance(CONF, Settings)
+    assert isinstance(CONF.workspace, Workspace)
+
+
+
+def test_settings_to_dict() -> None:
+    """Test settings can be converted to dictionary.
+    
+    Raises:
+        AssertionError: If to_dict doesn't return a dict
+    """
+    settings = Settings()
+    settings_dict = settings.to_dict()
+    
+    assert isinstance(settings_dict, dict)
+    assert "workspace" in settings_dict
+    assert "project_name" in settings_dict
+    assert settings_dict["project_name"] == "{{ project_name }}"
+
+
+def test_settings_repr() -> None:
+    """Test settings string representation.
+    
+    Raises:
+        AssertionError: If repr doesn't contain expected info
+    """
+    settings = Settings()
+    repr_str = repr(settings)
+    
+    assert "Settings" in repr_str
+    assert "{{ project_name }}" in repr_str

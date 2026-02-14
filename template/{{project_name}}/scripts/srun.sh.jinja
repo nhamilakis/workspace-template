@@ -1,0 +1,76 @@
+#!/bin/bash
+# Interactive SLURM session launcher for {{ project_name }}
+# This script helps you start an interactive session with customizable resources
+
+# Color codes for output
+GREEN='\033[0;32m'
+BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+echo -e "${BLUE}=== Interactive SLURM Session Launcher ===${NC}"
+echo ""
+
+# Default values
+DEFAULT_PARTITION="{{ slurm_partition }}"
+DEFAULT_CPUS={{ slurm_default_cpus }}
+DEFAULT_MEM="{{ slurm_default_mem }}"
+DEFAULT_TIME="{{ slurm_default_time }}"
+DEFAULT_GPUS=0
+
+# Prompt for partition
+echo -e "${GREEN}Available partitions: cpu, gpu-p1, gpu-p2 ${NC}"
+read -p "Enter partition [${DEFAULT_PARTITION}]: " PARTITION
+PARTITION=${PARTITION:-$DEFAULT_PARTITION}
+
+# Prompt for CPUs
+read -p "Number of CPUs [${DEFAULT_CPUS}]: " CPUS
+CPUS=${CPUS:-$DEFAULT_CPUS}
+
+# Prompt for memory
+read -p "Memory (e.g., 16G, 32G) [${DEFAULT_MEM}]: " MEM
+MEM=${MEM:-$DEFAULT_MEM}
+
+# Prompt for time limit
+read -p "Time limit (HH:MM:SS) [${DEFAULT_TIME}]: " TIME
+TIME=${TIME:-$DEFAULT_TIME}
+
+# GPU configuration
+read -p "Number of GPUs [${DEFAULT_GPUS}]: " GPUS
+GPUS=${GPUS:-$DEFAULT_GPUS}
+
+
+GPU_FLAG=""
+if [[ "$GPUS" -gt 0 ]]; then
+    read -p "GPU type (e.g., a100, v100, rtx2080) [a100]: " GPU_TYPE
+    GPU_TYPE=${GPU_TYPE:-a100}
+    
+    GPU_FLAG="--gres=gpu:${GPU_TYPE}:${GPUS}"
+fi
+
+
+# Build the srun command
+SRUN_CMD="srun --partition=${PARTITION} \
+    --cpus-per-task=${CPUS} \
+    --mem=${MEM} \
+    --time=${TIME} \
+    --export=ALL \
+    ${GPU_FLAG} \
+    --pty bash"
+
+# Display the command
+echo ""
+echo -e "${YELLOW}Launching interactive session with:${NC}"
+echo "  Partition: ${PARTITION}"
+echo "  CPUs: ${CPUS}"
+echo "  Memory: ${MEM}"
+echo "  Time: ${TIME}"
+if [[ -n "$GPU_FLAG" ]]; then
+    echo "  GPUs: ${GPUS} x ${GPU_TYPE}"
+fi
+echo ""
+echo -e "${BLUE}Command: ${SRUN_CMD}${NC}"
+echo ""
+
+# Execute the command
+eval $SRUN_CMD

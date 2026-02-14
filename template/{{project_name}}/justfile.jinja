@@ -1,0 +1,125 @@
+# Justfile for {{ project_name }}
+
+current_dir := justfile_directory()
+
+{% if use_remote_sync %}
+# Remote cluster configuration
+REMOTE_CLUSTER := "{{ remote_cluster_name }}"
+LOCAL_HOSTNAME := "{{ local_hostname }}"
+hostname := `hostname`
+
+# Determine workspace path based on hostname
+WORKSPACE_PATH := "{{ remote_workspace_path }}/{{ project_name }}"
+
+# Rsync exclusions (one per line for easy modification)
+RSYNC_EXCLUDES := \
+'''
+--exclude=*.log
+--exclude=.venv
+--exclude=data
+--exclude=.mypy_cache
+--exclude=notebooks
+--exclude=.ruff_cache
+--exclude=*.egg-info
+--exclude=__pycache__
+--exclude=.pytest_cache
+--exclude=dist
+--exclude=build
+--exclude=.git
+'''
+{% endif %}
+
+# Default recipe - show available commands
+default:
+    @just --list
+
+# Set up the development environment
+setup:
+    uv sync --all-extras
+{% if use_precommit %}
+    uv run pre-commit install
+{% endif %}
+
+# Run tests with pytest
+test:
+    uv run pytest
+
+# Format code with ruff
+format:
+    uv run ruff format .
+
+# Lint code with ruff
+lint:
+    uv run ruff check .
+
+# Fix linting issues automatically
+lint-fix:
+    uv run ruff check --fix .
+
+# Run type checking with mypy
+typecheck:
+    uv run mypy src/{{ module_name }}
+
+# Run all checks (format, lint, typecheck)
+check: format lint typecheck
+
+# Serve documentation locally
+docs-serve:
+    uv run mkdocs serve
+
+# Build documentation
+docs-build:
+    uv run mkdocs build
+
+# Build the package
+build:
+    uv build
+
+# Clean build artifacts and cache
+clean:
+    rm -rf dist/
+    rm -rf build/
+    rm -rf *.egg-info
+    rm -rf .pytest_cache
+    rm -rf .mypy_cache
+    rm -rf .ruff_cache
+    rm -rf site/
+    find . -type d -name __pycache__ -exec rm -rf {} +
+    find . -type f -name "*.pyc" -delete
+
+# Install pre-commit hooks
+pre-commit-install:
+    uv run pre-commit install
+
+# Run pre-commit on all files
+pre-commit-run:
+    uv run pre-commit run --all-files
+
+# Update pre-commit hooks
+pre-commit-update:
+    uv run pre-commit autoupdate
+
+# Run everything (setup, check, test)
+all: setup check test
+    @echo "✓ All checks passed!"
+
+{% if use_remote_sync %}
+{% raw %}
+# Internal: rsync helper with exclusions
+_rsync-to source_path target_path:
+    #!/usr/bin/env bash
+    echo "Syncing source code to remote cluster..."
+    EXCLUDES=$(echo "{{ RSYNC_EXCLUDES }}" | tr '\n' ' ')
+    if [ -z "${SSHPASS}" ]; then
+        rsync -azP --delete ${EXCLUDES} "{{source_path}}/" "{{target_path}}/"
+    else
+        sshpass -e rsync -azP --delete ${EXCLUDES} "{{source_path}}/" "{{target_path}}/"
+    fi
+
+# Deploy code to remote cluster
+sync-remote:
+    @echo "Deploying to {% endraw %}{{ remote_cluster_name }}{% raw %}..."
+    just _rsync-to "{{current_dir}}/" "{{REMOTE_CLUSTER}}:{{WORKSPACE_PATH}}/"
+    @echo "✓ Code synced successfully!"
+{% endraw %}
+{% endif %}

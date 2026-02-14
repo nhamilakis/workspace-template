@@ -1,0 +1,57 @@
+# Configuration
+
+{{ project_name }} uses TOML-based configuration with Pydantic for validation.
+
+## Configuration Files
+
+Configuration is loaded from multiple locations in priority order:
+
+1. `/etc/{{ project_slug }}/config.toml` - System-wide (lowest priority)
+2. `~/.{{ project_slug }}/config.toml` - User-specific
+3. `{{ project_slug }}.toml` - Project-specific (highest priority)
+
+Later configurations override earlier ones.
+
+## Configuration Schema
+```toml
+# Project settings
+project_name = "{{ project_name }}"
+debug = false
+
+# Workspace paths
+[workspace]
+data_dir = "data"
+output_dir = "outputs"
+models_dir = "models"
+cache_dir = ".cache"
+```
+
+## Using Configuration
+```python
+from {{ module_name }} import CONF
+
+# Access workspace paths
+print(CONF.workspace.data_dir)
+print(CONF.workspace.output_dir)
+
+# Create workspace directories
+CONF.workspace.ensure_directories()
+
+# Access settings
+print(CONF.project_name)
+print(CONF.debug)
+```
+
+## Creating Custom Configuration
+
+Create a file `{{ project_slug }}.toml` in your project root:
+```toml
+project_name = "My Custom Project"
+debug = true
+
+[workspace]
+data_dir = "/path/to/data"
+output_dir = "/path/to/outputs"
+```
+
+The configuration will be automatically loaded when you import the module.

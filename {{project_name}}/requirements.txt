@@ -1,4 +1,0 @@
-rich # Pretty Printing & other console tools
-rich-argparse  # Rich coloring of argparse
-tomli >= 1.1.0 ; python_version < "3.11" # Toml for older python
-# tomli-w # In case writing toml files is required

@@ -1,4 +1,0 @@
-project_name: my_project
-module_name:  mymodule
-description:  A super cool project that does things using python.
-python: "3.10"

@@ -1,0 +1,43 @@
+#!/bin/bash
+#SBATCH --job-name={{ project_slug }}_job
+#SBATCH --partition={{ slurm_partition }}
+#SBATCH --export=ALL
+#SBATCH --cpus-per-task={{ slurm_default_cpus }}
+#SBATCH --mem={{ slurm_default_mem }}
+#SBATCH --time={{ slurm_default_time }}
+#SBATCH --output=slurm-%j.out
+#SBATCH --error=slurm-%j.err
+# GPU configuration (uncomment if using GPU partition)
+##SBATCH --gres=gpu:1
+
+
+# Print job information
+echo "========================================="
+echo "Job ID: $SLURM_JOB_ID"
+echo "Job Name: $SLURM_JOB_NAME"
+echo "Node: $SLURM_NODELIST"
+echo "Partition: $SLURM_JOB_PARTITION"
+echo "CPUs: $SLURM_CPUS_PER_TASK"
+echo "Memory: {{ slurm_default_mem }}"
+echo "Start Time: $(date)"
+echo "========================================="
+
+# Load modules (adjust based on your cluster)
+module load uv
+
+# Set up environment
+export PROJECT_ROOT=$(pwd)
+cd 
+# Example: Run a Python script
+echo "Running {{ project_slug }} job..."
+
+# Option 1: Run with uv
+uv run python -c "from {{ module_name }} import hello; print(hello())"
+
+# Option 2: Run your actual script (uncomment and modify)
+# uv run python -m {{ module_name }}
+
+# Print completion information
+echo "========================================="
+echo "Job completed at: $(date)"
+echo "========================================="

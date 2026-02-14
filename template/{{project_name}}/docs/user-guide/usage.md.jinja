@@ -1,0 +1,84 @@
+# Usage Guide
+
+## Basic Usage
+```python
+from {{ module_name }} import CONF, hello
+
+# Simple greeting
+print(hello())
+
+# Access configuration
+print(CONF.workspace.data_dir)
+```
+
+## Working with Configuration
+
+### Accessing Settings
+```python
+from {{ module_name }} import CONF
+
+# Workspace paths
+data_path = CONF.workspace.data_dir
+output_path = CONF.workspace.output_dir
+models_path = CONF.workspace.models_dir
+
+# Create all workspace directories
+CONF.workspace.ensure_directories()
+```
+
+### Converting to Dictionary
+```python
+from {{ module_name }} import CONF
+
+# Get all settings as dict
+settings_dict = CONF.to_dict()
+print(settings_dict)
+```
+
+## Utility Functions
+```python
+from {{ module_name }}.utils import print_success, print_error, print_info, get_project_root
+
+# Rich console output
+print_success("Operation completed!")
+print_error("Something went wrong!")
+print_info("FYI: This is informational")
+
+# Get project root directory
+root = get_project_root()
+```
+
+## Development Workflow
+
+### Code Quality
+```bash
+# Format code
+just format
+
+# Lint code
+just lint
+
+# Type check
+just typecheck
+
+# Run all checks
+just check
+```
+
+### Testing
+```bash
+# Run all tests
+just test
+
+# Run specific test
+uv run pytest tests/test_settings.py -v
+```
+
+### Documentation
+```bash
+# Serve docs locally
+just docs-serve
+
+# Build docs
+just docs-build
+```

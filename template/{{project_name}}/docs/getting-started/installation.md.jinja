@@ -1,0 +1,52 @@
+# Installation
+
+## Prerequisites
+
+- Python {{ python_version }} or higher
+- [uv](https://github.com/astral-sh/uv) package manager
+- Git
+
+## Installing uv
+
+=== "macOS/Linux"
+```bash
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+=== "Windows"
+```powershell
+    powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+## Clone and Setup
+```bash
+# Clone the repository
+git clone <your-repo-url>
+cd {{ project_name }}
+
+# Set up the development environment
+just setup
+```
+
+This will:
+
+- Create a virtual environment
+- Install all dependencies
+- Install development tools (pytest, mypy, ruff, etc.)
+- Install documentation dependencies
+
+## Verify Installation
+```bash
+# Run tests
+just test
+
+# Check code quality
+just check
+```
+
+## Optional: Install pre-commit hooks
+```bash
+just pre-commit-install
+```
+
+This will run code quality checks automatically before each commit.

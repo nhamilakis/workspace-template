@@ -1,0 +1,64 @@
+# SLURM Scripts
+
+{{ project_name }} includes SLURM scripts for running jobs on HPC clusters.
+
+## Interactive Sessions
+
+Use `srun.sh` to start an interactive session:
+```bash
+./scripts/srun.sh
+```
+
+You'll be prompted for:
+
+- **Partition**: gpu, cpu, or debug
+- **CPUs**: Number of CPU cores (default: {{ slurm_default_cpus }})
+- **Memory**: Amount of RAM (default: {{ slurm_default_mem }})
+- **Time**: Time limit in HH:MM:SS format (default: {{ slurm_default_time }})
+- **GPUs**: Number of GPUs (default: 0, 0 means no GPU)
+- **GPU Type**: Type of GPU if GPUs > 0 (e.g., a100, v100)
+
+## Batch Jobs
+
+Submit a batch job using `example.sbatch`:
+```bash
+sbatch scripts/example.sbatch
+```
+
+### Customizing Batch Jobs
+
+Edit `scripts/example.sbatch` to configure:
+```bash
+#SBATCH --job-name=my_job
+#SBATCH --partition={{ slurm_partition }}
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=32G
+#SBATCH --time=12:00:00
+#SBATCH --gres=gpu:a100:2
+```
+
+### Example Job Script
+```bash
+#!/bin/bash
+#SBATCH --job-name={{ project_slug }}_train
+#SBATCH --partition=gpu
+#SBATCH --gres=gpu:a100:1
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=16G
+#SBATCH --time=4:00:00
+
+# Run training
+uv run python src/{{ module_name }}/train.py --config configs/experiment.yaml
+```
+
+## Monitoring Jobs
+```bash
+# Check job status
+squeue -u $USER
+
+# Cancel a job
+scancel <job_id>
+
+# View job output
+cat slurm-<job_id>.out
+``` 
