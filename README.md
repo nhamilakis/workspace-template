@@ -24,11 +24,11 @@ A modern, opinionated Copier template for Python data science projects with best
 
 ### Create a new project
 ```bash
-uvx copier copy gh:nhamilakis/workspace-template .
+uvx copier copy --trust gh:nhamilakis/workspace-template .
 ```
 
 ```bash
-uv tool run copier copy gh:nhamilakis/workspace-template .
+uv tool run copier copy --trust gh:nhamilakis/workspace-template .
 ```
 
 
